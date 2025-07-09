@@ -1,0 +1,22 @@
+# 監視対象URLリスト
+# 1行に1URLを記載してください
+# '#' で始まる行はコメントとして扱われます
+
+# サンプルURL（実際の監視対象に置き換えてください）
+# https://example.com/news
+# https://example.com/updates
+# https://example.com/documents
+
+# 政府機関サイト例
+# https://www.mhlw.go.jp/
+# https://www.mext.go.jp/
+
+# 企業サイト例
+# https://www.company.co.jp/news/
+# https://www.company.co.jp/ir/
+
+# 注意事項:
+# - 最大100URLまで対応
+# - PDF直リンクよりもPDFリンクを含むページの方が検知しやすい
+# - アクセス頻度の高いサイトは監視対象から除外することを推奨
+# - ログイン認証が必要なページは監視できません
