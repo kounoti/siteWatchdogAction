@@ -14,20 +14,19 @@ logger = logging.getLogger(__name__)
 
 class GmailSender:
     def __init__(self):
-        self.smtp_server = "smtp.gmail.com"
-        self.smtp_port = 587
-        
         # Get credentials from environment
+        self.smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
+        self.smtp_port = int(os.getenv('SMTP_PORT', '587'))
         self.smtp_user = os.getenv('SMTP_USER')
-        self.smtp_pass = os.getenv('SMTP_PASS')
-        self.mail_to = os.getenv('MAIL_TO', '').split(',')
+        self.smtp_pass = os.getenv('SMTP_PASSWORD')
+        self.mail_to = os.getenv('RECIPIENT_EMAIL', '').split(',')
         
         # Validate configuration
         if not self.smtp_user or not self.smtp_pass:
-            raise ValueError("SMTP_USER and SMTP_PASS environment variables must be set")
+            raise ValueError("SMTP_USER and SMTP_PASSWORD environment variables must be set")
         
         if not self.mail_to or not self.mail_to[0]:
-            raise ValueError("MAIL_TO environment variable must be set")
+            raise ValueError("RECIPIENT_EMAIL environment variable must be set")
         
         # Clean up email addresses
         self.mail_to = [email.strip() for email in self.mail_to if email.strip()]
