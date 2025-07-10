@@ -1,71 +1,117 @@
-# サイト更新検知 ✕ メール通知 — プロジェクト概要
+# 🔍 Site Watchdog Action
 
-> **目的だけをまとめた MD。実装詳細は Claude Code へ委譲します。**
+**ウェブサイトの更新を自動監視し、変更をメール通知するGitHub Actionsプロジェクト**
 
----
+[![Site Monitoring](https://github.com/kounoti/siteWatchdogAction/actions/workflows/monitor-sites.yml/badge.svg)](https://github.com/kounoti/siteWatchdogAction/actions/workflows/monitor-sites.yml)
 
-## 🎯 何を実現したいか
+## 🎯 機能概要
 
-| 項目 | 内容 |
-|------|------|
-| **監視対象** | `urls.txt` に列挙した **最大 100 URL** |
-| **検知条件** | 新しい PDF や任意要素の **追加 / 削除 / 変化** |
-| **通知方法** | Gmail SMTP で HTML メールを送付（To: クライアント、Cc: 開発者） |
-| **実行頻度** | 6 時間ごとに GitHub Actions で自動実行（無料枠 2 000 min/月以内） |
-| **拡張** | URL が 100 件超 or 間隔短縮時はワークフローを分割／cron 調整で対応 |
+- **📄 PDFファイル監視**: 新しいPDFファイルの追加・削除を検知
+- **🔗 コンテンツ変更検知**: ウェブページの内容変更を検知
+- **📧 メール通知**: Gmail経由で変更をメール通知
+- **⏰ 自動実行**: 6時間ごとに定期実行
+- **🚀 無料運用**: GitHub Actions無料枠内で運用
 
----
+## 📋 監視対象サイト
 
-## 📁 推奨フォルダ構成（大枠）
-repo-root/
-├─ .github/
-│ └─ workflows/
-│ └─ monitor-sites.yml # GitHub Actions ワークフロー
-├─ monitor/ # Python パッケージ
-│ ├─ main.py # エントリーポイント
-│ ├─ fetcher.py # HTTP 取得 & リトライ
-│ ├─ detector.py # 差分判定ロジック
-│ ├─ mailer.py # Gmail 送信ユーティリティ
-│ ├─ state/ # 前回ハッシュ等を保存 (Actions Cache 対象)
-│ └─ requirements.txt
-└─ urls.txt # 監視 URL を 1 行ずつ記述
+現在監視中のサイト：
+- 厚生労働省（新型コロナウイルス関連）
+- 東京大学（新着情報）
+- 気象庁（予報情報）
+- 内閣府（公式情報）
+- Yahoo!ニュース（トピックス）
 
+## 🔧 セットアップ方法
 
+### 1. リポジトリのフォーク・クローン
 
----
+```bash
+git clone https://github.com/kounoti/siteWatchdogAction.git
+cd siteWatchdogAction
+```
 
-## ⚙️ GitHub Actions ワークフロー骨子
+### 2. GitHub Secretsの設定
 
-| ステップ | 役割 |
-|----------|------|
-| **Trigger** | `cron: "0 */6 * * *"`（UTC）＋ `workflow_dispatch` |
-| **Checkout** | `actions/checkout` |
-| **Python セットアップ** | `actions/setup-python@v4` (3.11 など) |
-| **Cache** | `actions/cache` で `monitor/state/` を復元・保存 |
-| **依存インストール** | `pip install -r monitor/requirements.txt` |
-| **実行** | `python -m monitor.main` |
-| **結果** | 変更があれば `mailer.py` がメール送信 |
+リポジトリの **Settings** → **Secrets and variables** → **Actions** で以下を設定：
 
----
+| Secret名 | 値 | 説明 |
+|---------|---|------|
+| `SMTP_SERVER` | `smtp.gmail.com` | Gmail SMTPサーバー |
+| `SMTP_PORT` | `587` | SMTPポート番号 |
+| `SMTP_USER` | `your-email@gmail.com` | 送信者Gmailアドレス |
+| `SMTP_PASSWORD` | `your-app-password` | Gmailアプリパスワード |
+| `RECIPIENT_EMAIL` | `notify@example.com` | 通知先メールアドレス |
 
-## 🔐 必要な Secrets
+### 3. Gmailアプリパスワードの生成
 
-| Name | 用途 |
-|------|------|
-| `SMTP_USER` | Gmail アカウント（例: `yourname@gmail.com`） |
-| `SMTP_PASS` | Gmail **アプリパスワード** |
-| `MAIL_TO`   | 送信先アドレス（カンマ区切り可） |
+1. Googleアカウントで2段階認証を有効化
+2. https://myaccount.google.com/apppasswords にアクセス
+3. アプリパスワードを生成してSecretに設定
 
----
+### 4. 監視URLの設定
 
-## 📝 Claude Code への指示例
+`urls.txt` に監視したいURLを1行ずつ追加：
 
-> *「上記仕様を満たす Python 実装と `monitor-sites.yml` を作って」*  
-> - フォルダ構成は本概要に準拠  
-> - 依存は最小（`requests`, `beautifulsoup4` など）  
-> - `monitor.main()` で差分検知 ➜ Gmail 送信まで完結  
-> - ユニットテストしやすい関数分割を推奨  
+```
+https://example.com/news
+https://example.com/updates
+```
 
----
+## 📁 プロジェクト構造
 
-この Markdown をそのまま `README.md` に置き、実装タスクは Claude Code にパスする想定です。
+```
+├── .github/workflows/
+│   └── monitor-sites.yml     # GitHub Actionsワークフロー
+├── monitor/
+│   ├── main.py              # メインエントリーポイント
+│   ├── fetcher.py           # ウェブサイト取得
+│   ├── detector.py          # 変更検知ロジック
+│   ├── mailer.py            # メール送信
+│   └── requirements.txt     # Python依存関係
+├── urls.txt                 # 監視対象URL
+└── README.md
+```
+
+## 🔄 実行方法
+
+### 自動実行
+- 6時間ごとに自動実行（UTC: 0, 6, 12, 18時）
+- 日本時間: 9, 15, 21, 3時
+
+### 手動実行
+1. GitHubリポジトリの **Actions** タブに移動
+2. **Site Monitoring** ワークフローを選択
+3. **Run workflow** ボタンをクリック
+
+## 📧 通知メール例
+
+```
+🔍 サイト更新検知通知
+検知時刻: 2025-07-10 22:43:11
+
+更新サイト数: 1件
+
+📄 https://example.com/news
+📄 新しいPDFファイル: 重要なお知らせ (https://example.com/file.pdf)
+📝 コンテンツが更新されました (+120文字)
+```
+
+## 🛠️ 技術スタック
+
+- **Python 3.11**: メイン開発言語
+- **GitHub Actions**: CI/CDプラットフォーム
+- **BeautifulSoup4**: HTML解析
+- **Requests**: HTTP通信
+- **Gmail SMTP**: メール送信
+
+## 📊 実行ログ
+
+GitHub Actionsの実行状況は[こちら](https://github.com/kounoti/siteWatchdogAction/actions)で確認できます。
+
+## 🤝 貢献
+
+プルリクエストや Issues での改善提案を歓迎します。
+
+## 📄 ライセンス
+
+このプロジェクトはMITライセンスの下で公開されています。
