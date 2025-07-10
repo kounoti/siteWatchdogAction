@@ -21,5 +21,17 @@
 # - アクセス頻度の高いサイトは監視対象から除外することを推奨
 # - ログイン認証が必要なページは監視できません
 
-# 実際の監視対象URL
+# テスト用サイト
+# 東京大学
+https://www.u-tokyo.ac.jp/focus/ja/
+
+# 気象庁(毎日更新)
+https://www.jma.go.jp/bosai/forecast/
+
+# 内閣府
+https://www.cao.go.jp/
+
+# yahooニュース(頻繁更新)
+https://news.yahoo.co.jp/topics/top-picks
+
 https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/0000209634.html
